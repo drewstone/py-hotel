@@ -28,5 +28,6 @@ class Agent(object):
         return self.position
 
     def process_reward(self, reward):
-        print("Reward: {}".format(reward))
+        print("Reward: {}, Position: {}".format(reward, self.position))
+        pass
 
