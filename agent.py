@@ -16,6 +16,13 @@ class Error(Enum):
     UnsupportedDimension = 4
 
 
+class AgentActions(Enum):
+    UP = 1
+    DOWN = 2
+    LEFT = 3
+    RIGHT = 4
+
+
 class Agent(object):
     """docstring for Agent"""
     def __init__(
@@ -28,21 +35,49 @@ class Agent(object):
         super(Agent, self).__init__()
         self.agent_id = agent_id
         self.position = np.array(position)
-        self.rl_agent = DQNAgent(input_dim, output_dim)
+        self.timestep_reward = []
+        # self.rl_agent = DQNAgent(input_dim, output_dim)
+
+    def init_q(self, s, a, type="ones"):
+        """
+        @param s the number of states
+        @param a the number of actions
+        @param type random, ones or zeros for the initialization
+        """
+        if type == "ones":
+            return np.ones((s, a))
+        elif type == "random":
+            return np.random.random((s, a))
+        elif type == "zeros":
+            return np.zeros((s, a))
+
+
+    def epsilon_greedy(self, epsilon, n_actions, s, train=False):
+        """
+        @param Q Q values state x action -> value
+        @param epsilon for exploration
+        @param s number of states
+        @param train if true then no random actions selected
+        """
+        if train or np.random.rand() < epsilon:
+            action = np.argmax(self.Q[s, :])
+        else:
+            action = np.random.randint(0, n_actions)
+        return action
 
     def act(self, state):
-        # flatten state when passing to rl_agent
-        new_position = self.rl_agent.act(state.flatten())
-        self.position = new_position
-        return self.position
-
-    def replay(self, batch_size):
-        return self.rl_agent.replay(batch_size)
-
-    def remember(self, state, action, reward, next_state, done):
-        return self.rl_agent.remember(
-            state.flatten(),
-            action,
-            reward,
-            next_state.flatten(),
-            done)
+        pass
+    
+    def process_reward(self, reward, s, s_, done):
+        self.total_reward += reward
+        a_ = np.argmax(Q[s_, :])
+        if done:
+            self.Q[s, a] += alpha * (reward - self.Q[s, a])
+        else:
+            self.Q[s, a] += alpha * (reward + (gamma * self.Q[s_, a_]) - self.Q[s, a])
+        s, a = s_, a_
+        if done:
+            if render:
+                print(f"This episode took {t} timesteps and reward: {self.total_reward}")
+            timestep_reward.append(total_reward)
+            break

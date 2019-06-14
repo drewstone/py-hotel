@@ -44,17 +44,6 @@ class Simulator(object):
                 self.agents)))
             rewards = self.step(actions)
 
-            for inx, agent in enumerate(self.agents):
-                agent.remember(
-                    positions,      # state
-                    actions[inx],   # action
-                    rewards[inx],   # reward
-                    actions,        # next_state
-                    False)          # done
-
-        for agent in self.agents:
-            agent.replay(32)
-
     def step(self, actions):
         # order agents
         rewards, region_indices = [], []
@@ -109,13 +98,13 @@ class Simulator(object):
                 # Simple agents all start in center of [0,1]
                 agent = Agent(
                     i,
-                    np.around(np.full((ss_dim,), 50.0), decimals=3),
+                    np.full((ss_dim,), 50),
                     ss_dim * num_agents,
                     ss_dim)
             elif agent_type == AgentType.Random:
                 agent = Agent(
                     i,
-                    np.around(np.random.uniform(0, 100.0, ss_dim), decimals=3),
+                    np.random.randint(101, size=ss_dim),
                     ss_dim * num_agents,
                     ss_dim)
             else:
