@@ -43,19 +43,25 @@ class Agent(object):
         self.max_x = bounding_box[1]
         self.min_y = bounding_box[2]
         self.max_y = bounding_box[3]
+        self.total_reward = 0
 
     def act(self, state):
         action = np.random.choice(list(AgentActions))
         new_position = self.process_action(action)
-        out_of_bounds_vert = new_position[1] > self.max_y or new_position[1] < self.min_y
-        out_of_bounds_hori = new_position[0] > self.max_x or new_position[0] < self.min_x
+        out_of_bounds_vert = (new_position[1] > self.max_y or
+                              new_position[1] < self.min_y)
+        out_of_bounds_hori = (new_position[0] > self.max_x or
+                              new_position[0] < self.min_x)
         # while still out of bounds in any direction, select new action
         while out_of_bounds_vert or out_of_bounds_hori:
             action = np.random.choice(list(AgentActions))
             new_position = self.process_action(action)
-            out_of_bounds_vert = new_position[1] > self.max_y or new_position[1] < self.min_y
-            out_of_bounds_hori = new_position[0] > self.max_x or new_position[0] < self.min_x
+            out_of_bounds_vert = (new_position[1] > self.max_y or
+                                  new_position[1] < self.min_y)
+            out_of_bounds_hori = (new_position[0] > self.max_x or
+                                  new_position[0] < self.min_x)
 
+        self.prev_state = state
         self.position = new_position
         return self.position
 
@@ -69,7 +75,7 @@ class Agent(object):
         elif action == AgentActions.RIGHT:
             return np.array([self.position[0] + 1, self.position[1]])
 
-    def process_reward(self, reward, s, s_, done):
+    def process_reward(self, new_state, reward, done, info):
         pass
 
 
@@ -86,9 +92,11 @@ class QLearningAgent(Agent):
         output_dim,
         num_states,
         num_actions,
+        epsilon
     ):
         super().__init__(agent_id, position, input_dim, output_dim)
         self.Q = self.init_q(num_states, num_actions)
+        self.epsilon = epsilon
 
     def init_q(self, s, a, type="ones"):
         """
@@ -115,6 +123,24 @@ class QLearningAgent(Agent):
         else:
             action = np.random.randint(0, n_actions)
         return action
+
+    def process_reward(
+        self,
+        prev_state,
+        new_state,
+        action,
+        reward,
+        done,
+        info,
+        max_train_steps,
+    ):
+        self.total_reward += reward
+        a_ = np.argmax(self.Q[new_state, :])
+        if done:
+            Q[s, a] += self.alpha * (reward  - self.Q[prev_state, a] )
+        else:
+            Q[s, a] += alpha * ( reward + (gamma * Q[s_, a_]) - Q[s, a] )
+        s, a = s_, a_
 
 
 def create_agents(num_agents, agent_type, ss_dim, bounding_box):

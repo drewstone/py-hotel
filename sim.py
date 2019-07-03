@@ -54,6 +54,13 @@ class Simulator(object):
             self.agents)))
         # return results of processing step
         region_data, regions, vertices = self.process_step(actions)
+        # process rewards for agents
+        for inx, elt in enumerate(region_data):
+            self.agents[elt["agent_inx"]].process_reward(
+                actions,
+                elt["reward"],
+                False,
+                None)
         # plot data
         im = self.vor_fills(region_data, regions, vertices, actions)
         self.ax.axis('equal')
